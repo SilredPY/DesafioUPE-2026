@@ -55,7 +55,7 @@ if [ "$PUBLICO" = 1 ]; then
   # Se pregunta al propio túnel (no a los logs, que guardan URLs viejas de arranques anteriores).
   URL=""
   for _ in $(seq 1 30); do
-    URL=$(curl -sf http://localhost:2000/quicktunnel | grep -o '[a-z0-9-]*\.trycloudflare\.com' || true)
+    URL=$(curl -sf http://127.0.0.1:2000/quicktunnel | grep -o '[a-z0-9-]*\.trycloudflare\.com' || true)
     [ -n "$URL" ] && break; sleep 2
   done
   echo "  Link público (celulares): ${URL:+https://}${URL:-todavía arrancando, ver: docker compose logs tunel}"

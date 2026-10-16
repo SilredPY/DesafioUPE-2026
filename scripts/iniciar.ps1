@@ -67,7 +67,7 @@ if ($Publico) {
     # Se pregunta al propio túnel (no a los logs, que guardan URLs viejas de arranques anteriores).
     $url = $null
     for ($i = 0; $i -lt 30 -and -not $url; $i++) {
-        try { $url = (Invoke-RestMethod http://localhost:2000/quicktunnel -TimeoutSec 2 -ErrorAction Stop).hostname } catch {}
+        try { $url = (Invoke-RestMethod http://127.0.0.1:2000/quicktunnel -TimeoutSec 2 -ErrorAction Stop).hostname } catch {}
         if (-not $url) { Start-Sleep 2 }
     }
     if ($url) { Write-Host "  Link público (celulares): https://$url" -ForegroundColor Cyan }
