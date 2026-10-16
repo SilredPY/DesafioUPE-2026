@@ -32,6 +32,7 @@ cd DesafioUPE-2026
 | Sistema | Levantar | Con demo + link público | Apagar |
 |---|---|---|---|
 | **Windows (PowerShell)** | `.\scripts\iniciar.ps1` | `.\scripts\iniciar.ps1 -Demo -Publico` | `.\scripts\iniciar.ps1 -Detener` |
+| **Windows (doble clic)** | `scripts\iniciar.cmd` | `scripts\demo-publico.cmd` | `scripts\detener.cmd` |
 | **Windows (CMD)** | `scripts\iniciar.cmd` | `scripts\iniciar.cmd -Demo -Publico` | `scripts\iniciar.cmd -Detener` |
 | **macOS / Linux / WSL** | `./scripts/iniciar.sh` | `./scripts/iniciar.sh --demo --publico` | `./scripts/iniciar.sh --detener` |
 
