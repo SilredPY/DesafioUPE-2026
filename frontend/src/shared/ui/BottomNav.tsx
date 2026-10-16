@@ -1,9 +1,9 @@
 import { NavLink } from 'react-router-dom';
 
 const SECCIONES = [
-  { a: '/', icono: '⛈️', texto: 'Aratiri & Oky' },
-  { a: '/tape-ysyry', icono: '🌊', texto: 'Tape Ysyry' },
-  { a: '/yty', icono: '📷', texto: 'Yty' },
+  { a: '/', icono: '⛈️', texto: 'Clima' },
+  { a: '/tape-ysyry', icono: '🚦', texto: 'Tránsito' },
+  { a: '/yty', icono: '📷', texto: 'Reportar' },
   { a: '/yty/mapa', icono: '🗺️', texto: 'Mapa' },
 ];
 

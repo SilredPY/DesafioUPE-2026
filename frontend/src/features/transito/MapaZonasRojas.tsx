@@ -20,12 +20,17 @@ export function MapaZonasRojas() {
 
   return (
     <>
+      <div className="stats">
+        <div className="stat critico"><strong>{q.data.length}</strong><small>Zonas rojas</small></div>
+        <div className="stat"><strong>{q.data.reduce((n, z) => n + z.dispositivos, 0)}</strong><small>Vecinos confirmando</small></div>
+        <div className="stat"><strong>3 h</strong><small>Ventana</small></div>
+      </div>
       <Mapa etiqueta="Mapa de zonas rojas de tránsito">
         {q.data.map((z) => (
-          <Circle key={`${z.tipo}-${z.lat}-${z.lon}`} center={[z.lat, z.lon]} radius={50}
-            pathOptions={{ color: '#c53030', fillOpacity: 0.45 }}>
+          <Circle key={`${z.tipo}-${z.lat}-${z.lon}`} center={[z.lat, z.lon]} radius={60}
+            pathOptions={{ color: '#e53e3e', weight: 3, fillOpacity: 0.4 }}>
             <Popup>
-              <strong>{TIPOS[z.tipo]}</strong>
+              <strong>{TIPOS[z.tipo].emoji} {TIPOS[z.tipo].texto}</strong>
               <br />
               Confirmado por {z.dispositivos} vecinos · último aviso{' '}
               {new Date(z.ultimo).toLocaleTimeString('es-PY', { hour: '2-digit', minute: '2-digit' })}
@@ -33,10 +38,10 @@ export function MapaZonasRojas() {
           </Circle>
         ))}
       </Mapa>
-      <p className="subtitulo" style={{ marginTop: 8 }}>
+      <p className="leyenda">
         {q.data.length === 0
-          ? 'Sin zonas rojas confirmadas en las últimas 3 horas.'
-          : `${q.data.length} zona(s) roja(s) confirmadas por al menos 3 vecinos en las últimas 3 horas.`}
+          ? '🟢 Sin zonas rojas confirmadas. Las calles se ven bien por ahora.'
+          : '🔴 Zona Roja = al menos 3 vecinos distintos reportaron lo mismo a menos de 50 m.'}
       </p>
     </>
   );

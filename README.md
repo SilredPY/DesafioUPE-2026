@@ -47,6 +47,23 @@ npm run dev                     # http://localhost:5173 (proxy /api → :8000)
 
 Para correr la API sin Docker: `cd backend && python -m venv .venv && .venv/Scripts/pip install -e ".[dev]" && .venv/Scripts/uvicorn app.main:app --reload`, con la base levantada (`docker compose up -d db`).
 
+## 🎤 Modo demo (para el jurado)
+
+Un día soleado no muestra nada. Para presentar:
+
+```bash
+CLIMA_DEMO=tormenta docker compose up -d --build     # o CLIMA_DEMO=sequia con TEMPORADA_ENSO=LA_NINA
+docker compose exec db psql -U naangareko -f /demo/demo.sql   # justo antes de presentar
+cd frontend && npm run dev
+```
+
+- **Clima:** muestra tormenta crítica en rojo, con consejos y el mensaje en jopara si hay `ANTHROPIC_API_KEY`.
+- **Tránsito:** aparecen 2 Zonas Rojas, un raudal en la PY02 Km 4 y un semáforo en la Av. Monday. Un bache con un solo reporte no aparece: así se ve el anti-spam.
+- **Mapa:** muestra 12 reportes de residuos en las 4 ciudades, 3 de ellos críticos.
+- **Reportar:** subí una foto de un desagüe tapado. Como el modo demo simula lluvia, la IA la marca como **CRÍTICO**.
+
+Guion sugerido (2 min): problema (inundaciones y basurales en Alto Paraná) → alerta en lenguaje del barrio → foto de sumidero + lluvia = crítico → tres vecinos confirman un raudal → Zona Roja → funciona sin señal (activá "Offline" en DevTools y reportá).
+
 ## Tests
 
 ```bash
@@ -62,6 +79,7 @@ Prueban la lógica pura (reglas, scoring, agrupación de 50 m, calendario) y rec
 | `ANTHROPIC_API_KEY` | — | requerida para la IA |
 | `ANTHROPIC_MODEL` | `claude-opus-5-5` | `claude-haiku-5-5` abarata mucho la clasificación |
 | `TEMPORADA_ENSO` | `NEUTRAL` | `EL_NINO` / `LA_NINA`: actualizar a mano según el boletín ENSO |
+| `CLIMA_DEMO` | vacío | `tormenta` / `sequia`: escenario fijo para presentar |
 | `DATABASE_URL` | local | |
 
 ## Pendiente / fuera de alcance

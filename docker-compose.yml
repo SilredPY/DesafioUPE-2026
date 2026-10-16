@@ -9,6 +9,7 @@ services:
     volumes:
       - pgdata:/var/lib/postgresql/data
       - ./backend/db/init.sql:/docker-entrypoint-initdb.d/init.sql:ro
+      - ./backend/db/demo.sql:/demo/demo.sql:ro
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U naangareko"]
       interval: 5s
@@ -21,6 +22,7 @@ services:
         required: false
     environment:
       DATABASE_URL: postgresql+asyncpg://naangareko:naangareko@db:5432/naangareko
+      CLIMA_DEMO: ${CLIMA_DEMO:-}
     ports: ["8000:8000"]
     depends_on:
       db:

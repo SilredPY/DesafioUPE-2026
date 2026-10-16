@@ -1,3 +1,4 @@
+import asyncio
 import logging
 from dataclasses import replace
 from time import monotonic
@@ -24,7 +25,7 @@ async def obtener_resumen(
 
     nombre, punto = CIUDADES[slug]
     boletin = await fuente.obtener(punto)
-    alertas = [await _traducir(a, nombre, traductor) for a in evaluar(boletin, temporada)]
+    alertas = list(await asyncio.gather(*(_traducir(a, nombre, traductor) for a in evaluar(boletin, temporada))))
     resumen = ResumenClima(nombre, temporada, hay_lluvia(boletin), alertas)
     _cache[slug] = (monotonic(), resumen)
     return resumen

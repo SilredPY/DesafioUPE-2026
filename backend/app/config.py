@@ -1,3 +1,5 @@
+from typing import Literal
+
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
 from app.modules.clima.domain import Temporada
@@ -11,6 +13,8 @@ class Settings(BaseSettings):
     anthropic_model: str = "claude-opus-5-5"
     # shortcut: temporada ENSO fijada a mano; integrar índice ONI de NOAA cuando haga falta automatizarlo.
     temporada_enso: Temporada = Temporada.NEUTRAL
+    # Modo demo: reemplaza el pronóstico real por un escenario fijo (para presentaciones).
+    clima_demo: Literal["", "tormenta", "sequia"] = ""
     cors_origins: list[str] = ["http://localhost:5173", "http://localhost:4173"]
     max_foto_bytes: int = 5 * 1024 * 1024
 

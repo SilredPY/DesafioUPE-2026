@@ -5,9 +5,9 @@ export function TransitoPage() {
   return (
     <>
       <h1>Tape Ysyry</h1>
-      <p className="subtitulo">Avisá en un toque qué está pasando en la calle donde estás.</p>
+      <p className="subtitulo">El Waze de los raudales: avisá en un toque qué pasa en la calle donde estás.</p>
       <BotonesReporteRapido />
-      <h2>Zonas rojas</h2>
+      <h2>🔴 Zonas rojas ahora</h2>
       <MapaZonasRojas />
     </>
   );

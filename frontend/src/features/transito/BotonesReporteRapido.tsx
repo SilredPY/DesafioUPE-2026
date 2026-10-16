@@ -4,9 +4,9 @@ import { enviar } from '../../shared/api/client';
 import { ubicacionActual } from '../../shared/ubicacion';
 
 export const TIPOS = {
-  RAUDAL: '🌊 Raudal peligroso / calle intransitable',
-  SEMAFORO_CABLE: '⚡ Semáforo apagado / cable caído',
-  BACHE: '🕳️ Bache ciego u obstrucción por agua',
+  RAUDAL: { emoji: '🌊', texto: 'Raudal / calle intransitable' },
+  SEMAFORO_CABLE: { emoji: '⚡', texto: 'Semáforo apagado / cable caído' },
+  BACHE: { emoji: '🕳️', texto: 'Bache ciego / agua' },
 } as const;
 
 export type TipoIncidente = keyof typeof TIPOS;
@@ -14,7 +14,7 @@ export type TipoIncidente = keyof typeof TIPOS;
 export function BotonesReporteRapido() {
   const qc = useQueryClient();
   const [enviando, setEnviando] = useState<TipoIncidente | null>(null);
-  const [estado, setEstado] = useState<{ ok: boolean; texto: string } | null>(null);
+  const [estado, setEstado] = useState<{ clase: string; texto: string } | null>(null);
 
   async function reportar(tipo: TipoIncidente) {
     setEnviando(tipo);
@@ -22,15 +22,13 @@ export function BotonesReporteRapido() {
     try {
       const { lat, lon } = await ubicacionActual();
       const r = await enviar('/transito/reportes', { tipo: 'json', datos: { tipo, lat, lon } });
-      setEstado({
-        ok: true,
-        texto: r.estado === 'enviado'
-          ? '¡Gracias! Tu reporte ya está en el mapa de la comunidad.'
-          : 'Sin señal: guardamos tu reporte y lo enviamos apenas vuelva la conexión.',
-      });
+      navigator.vibrate?.(60);
+      setEstado(r.estado === 'enviado'
+        ? { clase: '', texto: '✅ ¡Gracias! Si 3 vecinos confirman, se marca como Zona Roja.' }
+        : { clase: 'atencion', texto: '📶 Sin señal: guardamos tu reporte y lo enviamos apenas vuelva la conexión.' });
       qc.invalidateQueries({ queryKey: ['zonas-rojas'] });
     } catch (e) {
-      setEstado({ ok: false, texto: e instanceof Error ? e.message : 'No se pudo enviar el reporte.' });
+      setEstado({ clase: 'error', texto: e instanceof Error ? e.message : 'No se pudo enviar el reporte.' });
     } finally {
       setEnviando(null);
     }
@@ -38,14 +36,16 @@ export function BotonesReporteRapido() {
 
   return (
     <div className="pila">
-      {(Object.keys(TIPOS) as TipoIncidente[]).map((t) => (
-        <button key={t} className="boton grande" disabled={enviando !== null} onClick={() => reportar(t)}>
-          {enviando === t ? 'Enviando…' : TIPOS[t]}
-        </button>
-      ))}
-      <div aria-live="polite">
-        {estado && <div className={`aviso ${estado.ok ? '' : 'error'}`}>{estado.texto}</div>}
+      <div className="tiles">
+        {(Object.keys(TIPOS) as TipoIncidente[]).map((t) => (
+          <button key={t} className={`tile ${t} ${enviando === t ? 'enviando' : ''}`} disabled={enviando !== null}
+            onClick={() => reportar(t)}>
+            <span className="emoji" aria-hidden="true">{TIPOS[t].emoji}</span>
+            {enviando === t ? 'Enviando…' : TIPOS[t].texto}
+          </button>
+        ))}
       </div>
+      <div aria-live="polite">{estado && <div className={`aviso ${estado.clase}`}>{estado.texto}</div>}</div>
     </div>
   );
 }

@@ -11,9 +11,12 @@ const TITULO: Record<string, string> = {
 
 export function AlertaCard({ alerta }: { alerta: Alerta }) {
   return (
-    <article className="tarjeta">
-      <strong>{TITULO[alerta.tipo] ?? alerta.tipo}</strong> <Badge severidad={alerta.severidad} />
-      <p>{alerta.mensaje_ciudadano}</p>
+    <article className={`tarjeta alerta sev-${alerta.severidad}`}>
+      <div className="alerta-cabecera">
+        <strong>{TITULO[alerta.tipo] ?? alerta.tipo}</strong>
+        <Badge severidad={alerta.severidad} />
+      </div>
+      <p className="mensaje">{alerta.mensaje_ciudadano}</p>
       <ul>
         {alerta.consejos.map((c) => (
           <li key={c}>{c}</li>
@@ -21,7 +24,7 @@ export function AlertaCard({ alerta }: { alerta: Alerta }) {
       </ul>
       <details>
         <summary>Dato técnico</summary>
-        <small>{alerta.mensaje_tecnico}</small>
+        {alerta.mensaje_tecnico}
       </details>
     </article>
   );

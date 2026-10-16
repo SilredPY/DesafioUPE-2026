@@ -88,6 +88,13 @@ def test_alerta_llega_aunque_falle_la_ia(client):
     assert a["mensaje_ciudadano"] == a["mensaje_tecnico"]
 
 
+def test_modo_demo_tormenta_sin_red(client, monkeypatch):
+    monkeypatch.setattr(clima_api.settings, "clima_demo", "tormenta")
+    del app.dependency_overrides[clima_api.get_fuente]  # usar la fuente real configurada
+    body = client.get("/api/clima/alertas", params={"ciudad": "minga-guazu"}).json()
+    assert body["lluvia_activa"] and {"TORMENTA", "LLUVIA_INTENSA"} <= {a["tipo"] for a in body["alertas"]}
+
+
 def test_ciudad_desconocida(client):
     assert client.get("/api/clima/alertas", params={"ciudad": "asuncion"}).status_code == 404
 

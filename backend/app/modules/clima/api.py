@@ -4,6 +4,7 @@ from pydantic import BaseModel
 from app.config import settings
 from app.modules.clima import use_cases
 from app.modules.clima.domain import CIUDADES
+from app.modules.clima.infra.demo import FuenteDemo
 from app.modules.clima.infra.open_meteo import OpenMeteo
 from app.modules.clima.infra.traductor_claude import TraductorClaude
 from app.modules.clima.ports import FuenteClima, TraductorCiudadano
@@ -13,7 +14,7 @@ router = APIRouter(prefix="/clima", tags=["Aratiri & Oky"])
 
 
 def get_fuente() -> FuenteClima:
-    return OpenMeteo()
+    return FuenteDemo(settings.clima_demo) if settings.clima_demo else OpenMeteo()
 
 
 def get_traductor() -> TraductorCiudadano:
