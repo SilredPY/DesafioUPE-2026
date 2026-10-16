@@ -5,133 +5,143 @@
 > *Ñangarekó* (guaraní): cuidar, proteger, velar por algo.
 > **Tu compañero diario para anticiparte al clima, ordenar tu ciudad y moverte seguro.**
 
-PWA mobile-first para el área metropolitana de Alto Paraná (Ciudad del Este, Presidente Franco, Hernandarias, Minga Guazú).
+App instalable (PWA) para el área metropolitana de Alto Paraná: Ciudad del Este, Presidente Franco, Hernandarias y Minga Guazú.
 
-| Módulo | Qué hace |
-|---|---|
-| **Aratiri & Oky** | Pronóstico de 6 h (Open-Meteo) → reglas por temporada (El Niño / La Niña) → mensaje preventivo en español paraguayo generado por Claude. |
-| **Yty & Sumideros** | Foto + GPS → Claude clasifica (`VERTEDERO_CLANDESTINO`, `SUMIDERO_BLOQUEADO`, `OBSTRUCCION_VIAL`) → severidad (sumidero tapado + lluvia = `CRITICO`) → Mapa de Riesgo Urbano. Calendario del camión por barrio. |
-| **Tape Ysyry** | Reporte de 1 toque (🌊 raudal, ⚡ semáforo/cable, 🕳️ bache) → Zona Roja cuando ≥3 dispositivos distintos reportan lo mismo a ≤50 m en las últimas 3 h. |
+| | Sección | Qué hace |
+|---|---|---|
+| ⛈️ | **Aratiri & Oky** | Alertas del pronóstico según El Niño / La Niña, explicadas en lenguaje del barrio por IA (Claude). |
+| 🚦 | **Tape Ysyry** | Reportes de 1 toque (raudal, semáforo, bache). Tres vecinos a menos de 50 m forman una **Zona Roja**. |
+| 📷 | **Yty & Sumideros** | Foto + GPS: la IA clasifica la basura; un sumidero tapado con lluvia en camino sale **CRÍTICO**. |
+| 🗺️ | **Mapa de Riesgo** | Todos los reportes por severidad, más el calendario del camión recolector por barrio. |
+| 🎓 | **Modo Campus** | Para estudiantes: clima, tránsito y avisos de su institución, más un "¿voy a clase?". Incluye la **UPE Presidente Franco**; se pueden sumar otras instituciones. |
+| ⚙️ | **Ajustes** | Modo claro, oscuro o del sistema, y paleta de colores con color personalizado. |
 
-## Arquitectura
+📖 **Informe técnico completo:** [docs/COMO_FUNCIONA.md](docs/COMO_FUNCIONA.md). Tiene la arquitectura, los flujos, la API, los datos, el motor C++, la seguridad y el rendimiento.
 
-```
-backend/app/
-  shared/            geo (Punto, bbox, haversine), severidad, db, http (device-id), ia/claude_client
-  modules/<módulo>/
-    domain.py        modelos y enums puros
-    <reglas>.py      lógica de negocio pura (reglas_estacionales, scoring, agrupacion, calendario)
-    ports.py         Protocols de los adaptadores externos
-    use_cases.py     orquesta dominio + puertos
-    infra/           adaptadores: Open-Meteo, Claude, PostGIS
-    api.py           router FastAPI + DTOs
-frontend/src/
-  shared/            api (cliente + cola offline), hooks, ui (átomos y Mapa)
-  features/          clima/, residuos/, transito/
-```
+---
 
-Resiliencia:
-- Si falla la IA, la alerta muestra el texto técnico y el reporte de foto se guarda como `PENDIENTE`. Ningún reporte se pierde.
-- Los POST sin señal se guardan en IndexedDB y se reenvían cuando vuelve la conexión.
-- El service worker cachea la app, los mapas (CacheFirst) y las últimas respuestas de la API (NetworkFirst con 5 s).
-- Las fotos se comprimen a 1280 px / JPEG 70% en el celular antes de subirlas, y se les borran los datos EXIF.
+## 🚀 Inicio rápido (para todo el equipo)
 
-## Cómo correrlo
-
-Todo el sistema con un solo comando:
+**Único requisito:** [Docker Desktop](https://www.docker.com/products/docker-desktop/) abierto. No hace falta instalar Python ni Node.
 
 ```bash
-cp .env.example .env            # cargar ANTHROPIC_API_KEY
-docker compose up -d --build
+git clone https://github.com/SilredPY/DesafioUPE-2026.git
+cd DesafioUPE-2026
 ```
 
-| Servicio | URL |
+| Sistema | Levantar | Con demo + link público | Apagar |
+|---|---|---|---|
+| **Windows (PowerShell)** | `.\scripts\iniciar.ps1` | `.\scripts\iniciar.ps1 -Demo -Publico` | `.\scripts\iniciar.ps1 -Detener` |
+| **Windows (CMD)** | `scripts\iniciar.cmd` | `scripts\iniciar.cmd -Demo -Publico` | `scripts\iniciar.cmd -Detener` |
+| **macOS / Linux / WSL** | `./scripts/iniciar.sh` | `./scripts/iniciar.sh --demo --publico` | `./scripts/iniciar.sh --detener` |
+
+El script revisa que Docker esté corriendo y crea `.env` si falta. Después levanta la base, aplica las migraciones, arranca la API y la web, y al final muestra las direcciones:
+
+| | Dirección |
 |---|---|
-| App (nginx: PWA + proxy `/api`) | http://localhost |
-| API + Swagger | http://localhost:8000/docs |
-| PostGIS | localhost:5432 |
+| App en tu compu | http://localhost |
+| API + documentación (Swagger) | http://localhost:8000/docs |
+| Otros equipos de tu red (Wi-Fi) | `http://<tu-IP>`: la muestra el script |
+| Celulares desde cualquier lugar | `https://….trycloudflare.com`: con `-Publico` / `--publico` |
 
-Para desarrollar con recarga en caliente: `docker compose up -d db api` y después `cd frontend && npm install && npm run dev`. Queda en http://localhost:5173.
+> Si PowerShell bloquea el script ("la ejecución de scripts está deshabilitada"), usá la versión CMD o corré una vez:
+> `Set-ExecutionPolicy -Scope CurrentUser RemoteSigned`
 
-## 📱 Instalar como app
+### 📱 Usarla en el celular
 
-Ñangarekó IA es una **PWA**: se instala desde el navegador, sin tienda de apps, y ocupa menos de 1 MB.
+- **Cámara, GPS y modo sin señal requieren HTTPS.** Usá el link público (`-Publico`), que es gratis y no pide cuenta ni dominio. Por la IP de la red local la app abre, pero sin esas funciones.
+- **Instalar:**
+  - En Android (Chrome): botón **⬇ Instalar** del encabezado.
+  - En iPhone (Safari): Compartir → *Agregar a pantalla de inicio*.
+- **El link público** depende de que la compu que lo generó siga encendida, y **cambia** si se reinicia el túnel.
 
-- **Android (Chrome):** tocar el botón **⬇ Instalar** del encabezado, o ⋮ → *Instalar aplicación*. Al mantener presionado el ícono aparecen accesos directos a *Tránsito* y *Reportar*.
-- **iPhone (Safari):** Compartir → *Agregar a pantalla de inicio*.
-- **PC (Chrome/Edge):** ícono de instalar en la barra de direcciones.
+### 🔑 Activar la IA y la administración (opcional)
 
-> ⚠️ En un celular, la cámara, el GPS y el modo offline **requieren HTTPS**: los navegadores solo los habilitan en `localhost` o en sitios seguros.
+Editá `.env` (no se sube a git):
 
-### Link público HTTPS gratis (sin dominio ni cuenta)
-
-```bash
-docker compose --profile publico up -d --build
-docker compose logs tunel | grep trycloudflare     # → https://xxxx.trycloudflare.com
+```ini
+ANTHROPIC_API_KEY=sk-ant-...     # mensajes en jopara y clasificación de fotos
+ADMIN_TOKEN=un-token-largo        # publicar avisos y agregar instituciones en 🎓 Campus
 ```
 
-Abrí ese link en cualquier celular, o pasalo como código QR al jurado. Ten en cuenta:
-- La app corre en **tu** compu: si la apagás o la desconectás, el link deja de funcionar.
-- El link **cambia cada vez** que se reinicia el túnel.
-- Para cerrarlo: `docker compose stop tunel`.
+Después de editarlo, reiniciá con el script. Sin clave, todo funciona igual: las alertas muestran el texto técnico y las fotos quedan como "Pendiente de revisión".
 
-Para regenerar los íconos después de cambiar `frontend/public/icon.svg`, correr `cd frontend && npm run iconos`.
+---
 
 ## 🎤 Modo demo (para el jurado)
 
-Un día soleado no muestra nada. Para presentar:
-
-```bash
-CLIMA_DEMO=tormenta docker compose up -d --build     # o CLIMA_DEMO=sequia con TEMPORADA_ENSO=LA_NINA
-docker compose exec db psql -U naangareko -f /demo/demo.sql   # justo antes de presentar
-# abrir http://localhost
+```powershell
+.\scripts\iniciar.ps1 -Demo -Publico
 ```
 
-- **Clima:** muestra tormenta crítica en rojo, con consejos y el mensaje en jopara si hay `ANTHROPIC_API_KEY`.
-- **Tránsito:** aparecen 2 Zonas Rojas, un raudal en la PY02 Km 4 y un semáforo en la Av. Monday. Un bache con un solo reporte no aparece: así se ve el anti-spam.
-- **Mapa:** muestra 12 reportes de residuos en las 4 ciudades, 3 de ellos críticos.
-- **Reportar:** subí una foto de un desagüe tapado. Como el modo demo simula lluvia, la IA la marca como **CRÍTICO**.
+Simula una tormenta y carga datos de ejemplo:
+- **Clima:** tormenta CRÍTICA en las 4 ciudades.
+- **Tránsito:** 3 Zonas Rojas (PY02 Km 4, Av. Monday, cerca de la UPE). Un bache con un solo reporte no aparece: así se ve el anti-spam.
+- **Mapa:** 13 reportes de basura, 4 críticos.
+- **Campus UPE:** "🏠 Evitá trasladarte", con un aviso de la universidad, una Zona Roja y un sumidero crítico cerca.
 
-Guion sugerido (2 min): problema (inundaciones y basurales en Alto Paraná) → alerta en lenguaje del barrio → foto de sumidero + lluvia = crítico → tres vecinos confirman un raudal → Zona Roja → funciona sin señal (activá "Offline" en DevTools y reportá).
+Las Zonas Rojas duran unas 2 horas: correr el script de nuevo justo antes de presentar.
 
-## Calidad y producción
+**Guion sugerido (2 min):**
+1. El problema: inundaciones y basurales en Alto Paraná.
+2. La alerta en lenguaje del barrio.
+3. Un estudiante abre 🎓 Campus y ve que no conviene salir.
+4. Una foto de un sumidero tapado con lluvia en camino sale CRÍTICO.
+5. Tres vecinos confirman un raudal y aparece la Zona Roja.
+6. Funciona sin señal.
+7. Ajustes: modo oscuro y la paleta de colores.
 
-- **CI (GitHub Actions):** en cada push corre los tests del backend, el build tipado del frontend y el build de las imágenes Docker.
-- **nginx:**
-  - Assets con hash cacheados un año (`immutable`).
-  - Service worker y HTML sin caché, para que las actualizaciones lleguen al toque.
-  - Compresión gzip.
-  - Cabeceras de seguridad (`X-Frame-Options`, `nosniff`, `Referrer-Policy`, `Permissions-Policy`: solo GPS y cámara).
-- **API:**
-  - Corre con un usuario sin privilegios y tiene healthcheck.
-  - Comprime las respuestas con gzip.
-  - Valida el tipo de imagen por su firma.
-  - Limita los reportes por dispositivo.
-  - No expone el `device_id`.
+---
 
-## Tests
+## 🧩 Agregar otra institución educativa
 
-```bash
-cd backend && .venv/Scripts/python -m pytest
-```
+Hace falta `ADMIN_TOKEN` configurado.
 
-Prueban la lógica pura (reglas, scoring, agrupación de 50 m, calendario) y recorren la API completa con adaptadores falsos: sin red, sin Claude y sin base de datos.
+- **Desde la app:** 🎓 Campus → *Administración de la institución* → completar el token y los datos, o tocar *Usar mi ubicación actual* estando en el campus.
+- **Desde la API** (las coordenadas son de ejemplo):
+  ```bash
+  curl -X POST http://localhost:8000/api/campus/instituciones \
+    -H "X-Admin-Token: $ADMIN_TOKEN" -H "Content-Type: application/json" \
+    -d '{"nombre":"Facultad Politécnica — UNE","ciudad":"Ciudad del Este","lat":-25.4995,"lon":-54.6744}'
+  ```
 
-## Configuración
+---
+
+## 🛠️ Desarrollo
+
+| Tarea | Comando |
+|---|---|
+| Frontend con recarga en caliente | `docker compose up -d db migrar api` y después `cd frontend && npm install && npm run dev` → http://localhost:5173 |
+| Tests backend (local) | `cd backend && python -m venv .venv && .venv/Scripts/pip install -e ".[dev]" && .venv/Scripts/python -m pytest` |
+| Tests backend con motor C++ | `docker build --target pruebas -t prueba backend && docker run --rm prueba` |
+| Benchmark C++ vs Python | `docker run --rm prueba python nativo/bench.py 100000` |
+| Regenerar íconos | `cd frontend && npm run iconos` |
+| Ver logs | `docker compose logs -f api` |
+| Borrar todos los datos | `docker compose down -v` ⚠️ irreversible |
+
+En macOS/Linux, reemplazá `.venv/Scripts/` por `.venv/bin/`.
+
+## ⚙️ Configuración (`.env`)
 
 | Variable | Default | |
 |---|---|---|
-| `ANTHROPIC_API_KEY` | — | requerida para la IA |
+| `ANTHROPIC_API_KEY` | — | Activa la IA |
 | `ANTHROPIC_MODEL` | `claude-opus-5-5` | `claude-haiku-5-5` abarata mucho la clasificación |
-| `TEMPORADA_ENSO` | `NEUTRAL` | `EL_NINO` / `LA_NINA`: actualizar a mano según el boletín ENSO |
+| `ADMIN_TOKEN` | vacío | Habilita la administración de Campus |
+| `TEMPORADA_ENSO` | `NEUTRAL` | `EL_NINO` / `LA_NINA`: actualizar según el boletín ENSO |
 | `CLIMA_DEMO` | vacío | `tormenta` / `sequia`: escenario fijo para presentar |
-| `DATABASE_URL` | local | |
 
-## Pendiente / fuera de alcance
+## Estructura
 
-- Notificaciones push reales: hoy el aviso del camión se muestra dentro de la app.
-- Integración con la DMH oficial: hay que sumar un adaptador nuevo que implemente `FuenteClima`.
-- Panel municipal y moderación de reportes `PENDIENTE`.
-- Login.
-- Guardar las fotos: hoy solo se guarda la clasificación.
-- **El calendario de recolección usa datos de ejemplo** (`backend/app/modules/residuos/data/calendario_barrios.json`). Hay que reemplazarlo por el cronograma oficial de cada municipalidad.
+```
+backend/
+  app/modules/        clima · residuos · transito · campus (Clean Architecture por módulo)
+  nativo/             motor C++17 + pybind11 (agrupación masiva, 47–53× más rápido)
+  db/esquema/         migraciones SQL idempotentes   db/demo.sql: datos de ejemplo
+  tests/              52 tests
+frontend/src/
+  shared/             cliente HTTP + cola offline, tema, componentes UI
+  features/           clima · transito · residuos · campus · ajustes
+scripts/              iniciar.ps1 · iniciar.cmd · iniciar.sh
+docs/                 COMO_FUNCIONA.md (informe técnico)
+```

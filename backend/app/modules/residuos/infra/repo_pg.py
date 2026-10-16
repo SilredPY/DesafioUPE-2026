@@ -45,6 +45,18 @@ class ReporteResiduoPg:
             for f in res
         ]
 
+    async def contar_criticos_cerca(self, punto: Punto, radio_m: int, desde: datetime) -> int:
+        # ST_DWithin sobre geography usa el índice GiST: no recorre toda la tabla.
+        res = await self._s.execute(
+            text("""
+                SELECT count(*) FROM reportes_residuos
+                WHERE severidad = 'CRITICO' AND creado >= :desde
+                  AND ST_DWithin(ubicacion, ST_SetSRID(ST_MakePoint(:lon, :lat), 4326)::geography, :radio)
+            """),
+            {"desde": desde, "lon": punto.lon, "lat": punto.lat, "radio": radio_m},
+        )
+        return res.scalar_one()
+
     async def contar_de_dispositivo(self, device_id: str, desde: datetime) -> int:
         res = await self._s.execute(
             text("SELECT count(*) FROM reportes_residuos WHERE device_id = :d AND creado >= :desde"),

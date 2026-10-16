@@ -5,13 +5,14 @@ const SECCIONES = [
   { a: '/tape-ysyry', icono: '🚦', texto: 'Tránsito' },
   { a: '/yty', icono: '📷', texto: 'Reportar' },
   { a: '/yty/mapa', icono: '🗺️', texto: 'Mapa' },
+  { a: '/campus', icono: '🎓', texto: 'Campus' },
 ];
 
 export function BottomNav() {
   return (
     <nav className="nav" aria-label="Secciones">
       {SECCIONES.map((s) => (
-        <NavLink key={s.a} to={s.a} end>
+        <NavLink key={s.a} to={s.a} end viewTransition>
           <span aria-hidden="true">{s.icono}</span>
           {s.texto}
         </NavLink>

@@ -1,0 +1,16 @@
+from datetime import datetime
+from typing import Protocol
+
+from app.modules.campus.domain import Aviso, Institucion
+
+
+class CampusRepo(Protocol):
+    async def instituciones(self) -> list[Institucion]: ...
+
+    async def institucion(self, slug: str) -> Institucion | None: ...
+
+    async def crear_institucion(self, i: Institucion) -> Institucion: ...
+
+    async def avisos_vigentes(self, slug: str, ahora: datetime) -> list[Aviso]: ...
+
+    async def crear_aviso(self, a: Aviso) -> Aviso: ...

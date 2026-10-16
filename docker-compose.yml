@@ -6,15 +6,29 @@ services:
       POSTGRES_USER: naangareko
       POSTGRES_PASSWORD: naangareko
       POSTGRES_DB: naangareko
-    ports: ["5432:5432"]
+    ports: ["127.0.0.1:5432:5432"]  # solo accesible desde esta computadora
     volumes:
       - pgdata:/var/lib/postgresql/data
-      - ./backend/db/init.sql:/docker-entrypoint-initdb.d/init.sql:ro
       - ./backend/db/demo.sql:/demo/demo.sql:ro
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U naangareko"]
+      test: ["CMD-SHELL", "pg_isready -U naangareko -d naangareko"]
       interval: 5s
       retries: 10
+
+  # Aplica backend/db/esquema/*.sql en orden en cada arranque (los scripts son idempotentes).
+  migrar:
+    image: postgis/postgis:16-3.4
+    depends_on:
+      db:
+        condition: service_healthy
+    environment:
+      PGPASSWORD: naangareko
+    volumes:
+      - ./backend/db/esquema:/esquema:ro
+    entrypoint:
+      - sh
+      - -c
+      - for f in /esquema/*.sql; do echo "migrando $$f"; psql -v ON_ERROR_STOP=1 -q -h db -U naangareko -d naangareko -f "$$f" || exit 1; done
 
   api:
     build: ./backend
@@ -25,10 +39,10 @@ services:
     environment:
       DATABASE_URL: postgresql+asyncpg://naangareko:naangareko@db:5432/naangareko
       CLIMA_DEMO: ${CLIMA_DEMO:-}
-    ports: ["8000:8000"]  # Swagger en /docs
+    ports: ["127.0.0.1:8000:8000"]  # Swagger en /docs, solo local
     depends_on:
-      db:
-        condition: service_healthy
+      migrar:
+        condition: service_completed_successfully
 
   web:
     build: ./frontend
@@ -40,6 +54,7 @@ services:
   # La URL aparece con: docker compose logs tunel | grep trycloudflare
   tunel:
     image: cloudflare/cloudflared:latest
+    restart: unless-stopped
     profiles: [publico]
     command: tunnel --no-autoupdate --url http://web:80
     depends_on: [web]

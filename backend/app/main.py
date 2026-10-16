@@ -4,8 +4,10 @@ from fastapi.middleware.gzip import GZipMiddleware
 from fastapi.responses import JSONResponse
 
 from app.config import settings
+from app.modules.campus.api import router as campus
 from app.modules.clima.api import router as clima
 from app.modules.residuos.api import router as residuos
+from app.modules.transito.agrupacion import MOTOR
 from app.modules.transito.api import router as transito
 from app.shared.geo import FueraDeZona
 from app.shared.http import LimiteExcedido
@@ -13,10 +15,11 @@ from app.shared.http import LimiteExcedido
 app = FastAPI(title="Ñangarekó IA", description="Clima, residuos y tránsito preventivo para Alto Paraná")
 app.add_middleware(GZipMiddleware, minimum_size=1000)  # el mapa con miles de reportes pesa menos en datos móviles
 app.add_middleware(
-    CORSMiddleware, allow_origins=settings.cors_origins, allow_methods=["GET", "POST"], allow_headers=["*"]
+    CORSMiddleware, allow_origins=settings.cors_origins, allow_methods=["GET", "POST"],
+    allow_headers=["Content-Type", "X-Device-Id", "X-Admin-Token"],
 )
 
-for router in (clima, residuos, transito):
+for router in (clima, residuos, transito, campus):
     app.include_router(router, prefix="/api")
 
 
@@ -32,4 +35,4 @@ async def limite_excedido(_: Request, __: LimiteExcedido):
 
 @app.get("/api/salud")
 def salud():
-    return {"ok": True}
+    return {"ok": True, "motor_agrupacion": MOTOR, "modo_demo": settings.clima_demo or None}

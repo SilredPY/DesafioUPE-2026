@@ -16,8 +16,16 @@ FROM (VALUES
   (9,  -25.4800, -54.8050, 'VERTEDERO_CLANDESTINO', 0.90, 'Basural a cielo abierto cerca de un arroyo.',                 'MEDIO'),
   (10, -25.5170, -54.6400, 'SUMIDERO_BLOQUEADO',    0.95, 'Sumidero sobre la Ruta PY02 Km 4 tapado por residuos.',       'CRITICO'),
   (11, -25.5300, -54.6250, 'OBSTRUCCION_VIAL',      0.77, 'Neumáticos y chatarra sobre la calzada.',                     'MEDIO'),
-  (12, -25.4950, -54.6900, 'VERTEDERO_CLANDESTINO', 0.89, 'Basura acumulada en la banquina de la Ruta PY02 Km 10.',      'MEDIO')
+  (12, -25.4950, -54.6900, 'VERTEDERO_CLANDESTINO', 0.89, 'Basura acumulada en la banquina de la Ruta PY02 Km 10.',      'MEDIO'),
+  (13, -25.5575, -54.6120, 'SUMIDERO_BLOQUEADO',    0.92, 'Boca de tormenta tapada a dos cuadras de la UPE.',            'CRITICO')
 ) AS t(n, lat, lon, cat, conf, descr, sev);
+
+-- Aviso de ejemplo de la UPE (vence en 12 h).
+INSERT INTO avisos (institucion, tipo, titulo, mensaje, vigente_hasta)
+SELECT 'upe-presidente-franco', 'CLIMA', 'Alerta de tormenta: precaución al venir al campus',
+       'Por el pronóstico de tormenta, los exámenes del turno noche se mantienen pero se tolerarán 30 minutos de retraso. '
+       || 'Evitá la Ruta PY02 Km 4 por raudal.', now() + interval '12 hours'
+WHERE EXISTS (SELECT 1 FROM instituciones WHERE slug = 'upe-presidente-franco');
 
 INSERT INTO reportes_transito (ubicacion, tipo, device_id, creado)
 SELECT ST_SetSRID(ST_MakePoint(lon, lat), 4326)::geography, tipo, dev, now() - (min || ' minutes')::interval
@@ -28,6 +36,9 @@ FROM (VALUES
   -- Semáforo apagado en Av. Monday: 3 vecinos
   (-25.52480, -54.62100, 'SEMAFORO_CABLE', 'demo-b1', 8), (-25.52490, -54.62110, 'SEMAFORO_CABLE', 'demo-b2', 15),
   (-25.52470, -54.62090, 'SEMAFORO_CABLE', 'demo-b3', 40),
+  -- Raudal cerca de la UPE (Pdte. Franco): 3 vecinos → Zona Roja cerca del campus
+  (-25.55520, -54.61250, 'RAUDAL', 'demo-d1', 6), (-25.55530, -54.61260, 'RAUDAL', 'demo-d2', 14),
+  (-25.55510, -54.61240, 'RAUDAL', 'demo-d3', 22),
   -- Bache en Pdte. Franco: solo 1 vecino (no llega a Zona Roja: así se ve el anti-spam)
   (-25.56000, -54.61200, 'BACHE', 'demo-c1', 10)
 ) AS t(lat, lon, tipo, dev, min);

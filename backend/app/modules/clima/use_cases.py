@@ -19,15 +19,22 @@ _cache: dict[str, tuple[float, ResumenClima]] = {}
 async def obtener_resumen(
     slug: str, fuente: FuenteClima, traductor: TraductorCiudadano, temporada: Temporada
 ) -> ResumenClima:
-    hit = _cache.get(slug)
+    nombre, punto = CIUDADES[slug]
+    return await resumen_en(slug, nombre, punto, fuente, traductor, temporada)
+
+
+async def resumen_en(
+    clave: str, nombre: str, punto: Punto, fuente: FuenteClima, traductor: TraductorCiudadano, temporada: Temporada
+) -> ResumenClima:
+    """Resumen para cualquier lugar (ciudad o campus); `clave` identifica la entrada en caché."""
+    hit = _cache.get(clave)
     if hit and monotonic() - hit[0] < TTL_S:
         return hit[1]
 
-    nombre, punto = CIUDADES[slug]
     boletin = await fuente.obtener(punto)
     alertas = list(await asyncio.gather(*(_traducir(a, nombre, traductor) for a in evaluar(boletin, temporada))))
     resumen = ResumenClima(nombre, temporada, hay_lluvia(boletin), alertas)
-    _cache[slug] = (monotonic(), resumen)
+    _cache[clave] = (monotonic(), resumen)
     return resumen
 
 

@@ -1,0 +1,9 @@
+[build-system]
+requires = ["setuptools>=69", "pybind11>=2.12"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "naangareko-nativo"
+version = "0.1.0"
+description = "Motor C++ (pybind11) para agrupar reportes masivos de Ñangarekó IA"
+requires-python = ">=3.12"

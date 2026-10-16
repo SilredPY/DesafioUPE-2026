@@ -1,3 +1,4 @@
+import { useEffect } from 'react';
 import { usePreferencia } from '../../shared/hooks/usePreferencia';
 import { peorSeveridad } from '../../shared/ui/Badge';
 import { ErrorState } from '../../shared/ui/ErrorState';
@@ -19,6 +20,11 @@ export function AlertasPage() {
   const ciudades = useCiudades();
   const q = useAlertas(ciudad);
   const e = estado(q.data);
+
+  // Si la ciudad guardada ya no existe en el servidor, volver a la primera disponible.
+  useEffect(() => {
+    if (ciudades.data?.length && !ciudades.data.some((c) => c.slug === ciudad)) setCiudad(ciudades.data[0].slug);
+  }, [ciudades.data, ciudad, setCiudad]);
 
   return (
     <>

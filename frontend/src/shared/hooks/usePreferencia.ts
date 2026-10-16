@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useCallback, useState } from 'react';
 
 /** Valor recordado en este celular (ciudad, barrio). Si el almacenamiento falla, funciona en memoria. */
 export function usePreferencia(clave: string, inicial: string) {
@@ -9,13 +9,13 @@ export function usePreferencia(clave: string, inicial: string) {
       return inicial;
     }
   });
-  const guardar = (v: string) => {
+  const guardar = useCallback((v: string) => {
     setValor(v);
     try {
       localStorage.setItem(clave, v);
     } catch {
       /* sin almacenamiento: queda solo en memoria */
     }
-  };
+  }, [clave]);
   return [valor, guardar] as const;
 }

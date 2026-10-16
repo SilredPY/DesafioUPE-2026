@@ -15,6 +15,8 @@ class Settings(BaseSettings):
     temporada_enso: Temporada = Temporada.NEUTRAL
     # Modo demo: reemplaza el pronóstico real por un escenario fijo (para presentaciones).
     clima_demo: Literal["", "tormenta", "sequia"] = ""
+    # Habilita crear instituciones y publicar avisos (header X-Admin-Token). Vacío = deshabilitado.
+    admin_token: str = ""
     cors_origins: list[str] = ["http://localhost:5173", "http://localhost:4173"]
     max_foto_bytes: int = 5 * 1024 * 1024
 

@@ -10,8 +10,12 @@ const queryClient = new QueryClient({
   defaultOptions: { queries: { retry: 2, staleTime: 60_000, refetchOnWindowFocus: true } },
 });
 
-window.addEventListener('online', () => void reenviarCola());
-void reenviarCola();
+// Al volver la señal: enviar la cola y refrescar mapas para que se vean los reportes recién subidos.
+async function sincronizar() {
+  if ((await reenviarCola()) > 0) await queryClient.invalidateQueries();
+}
+window.addEventListener('online', () => void sincronizar());
+void sincronizar();
 
 createRoot(document.getElementById('root')!).render(
   <StrictMode>

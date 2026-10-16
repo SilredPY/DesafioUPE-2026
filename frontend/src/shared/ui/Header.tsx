@@ -1,3 +1,4 @@
+import { NavLink } from 'react-router-dom';
 import { useInstalar } from '../hooks/useInstalar';
 
 export function Header() {
@@ -15,6 +16,9 @@ export function Header() {
             ⬇ Instalar
           </button>
         )}
+        <NavLink to="/ajustes" className="icono-boton" aria-label="Ajustes: tema y colores" viewTransition>
+          ⚙️
+        </NavLink>
       </div>
     </header>
   );

@@ -51,6 +51,14 @@ export async function getJson<T>(path: string): Promise<T> {
   return (await pedir(path, {}, 10_000)).json();
 }
 
+/** POST directo, sin cola offline (acciones de administración que deben confirmarse en el momento). */
+export async function postJson<T>(path: string, datos: unknown, headers: Record<string, string> = {}): Promise<T> {
+  const res = await pedir(path, {
+    method: 'POST', body: JSON.stringify(datos), headers: { 'Content-Type': 'application/json', ...headers },
+  }, 15_000);
+  return res.json();
+}
+
 export type Envio<T> = { estado: 'enviado'; data: T } | { estado: 'encolado' };
 
 /** POST que nunca pierde el reporte: si no hay red, queda en cola y se reenvía después. */
@@ -67,14 +75,17 @@ export async function enviar<T>(path: string, cuerpo: Cuerpo): Promise<Envio<T>>
 
 let reenviando = false;
 
-export async function reenviarCola(): Promise<void> {
-  if (reenviando || !navigator.onLine) return;
+/** Reenvía los reportes guardados sin señal. Devuelve cuántos se enviaron. */
+export async function reenviarCola(): Promise<number> {
+  if (reenviando || !navigator.onLine) return 0;
   reenviando = true;
+  let enviados = 0;
   try {
     for (const [clave, p] of await pendientes()) {
       try {
         await pedir(p.path, aInit(p.cuerpo), 45_000);
         await quitar(clave);
+        enviados++;
       } catch (e) {
         // Rechazo definitivo (4xx salvo 429): descartar. Red o servidor caído: probar en el próximo "online".
         if (e instanceof ApiError && e.status < 500 && e.status !== 429) await quitar(clave);
@@ -84,4 +95,5 @@ export async function reenviarCola(): Promise<void> {
   } finally {
     reenviando = false;
   }
+  return enviados;
 }
