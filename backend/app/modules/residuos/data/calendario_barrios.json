@@ -1,0 +1,13 @@
+{
+  "_nota": "DATOS DE EJEMPLO. Reemplazar con el cronograma oficial de recolección de cada municipalidad.",
+  "recorridos": [
+    { "barrio": "Microcentro", "ciudad": "Ciudad del Este", "dias": [0, 1, 2, 3, 4, 5], "hora": "20:00" },
+    { "barrio": "Boquerón", "ciudad": "Ciudad del Este", "dias": [0, 2, 4], "hora": "07:00" },
+    { "barrio": "San Isidro", "ciudad": "Ciudad del Este", "dias": [1, 3, 5], "hora": "07:00" },
+    { "barrio": "Área 1", "ciudad": "Ciudad del Este", "dias": [0, 3], "hora": "06:30" },
+    { "barrio": "Centro", "ciudad": "Presidente Franco", "dias": [0, 2, 4], "hora": "06:30" },
+    { "barrio": "San Miguel", "ciudad": "Presidente Franco", "dias": [1, 4], "hora": "07:30" },
+    { "barrio": "Centro", "ciudad": "Hernandarias", "dias": [0, 2, 4], "hora": "06:00" },
+    { "barrio": "Centro", "ciudad": "Minga Guazú", "dias": [1, 3, 5], "hora": "06:30" }
+  ]
+}
