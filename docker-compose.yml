@@ -1,6 +1,7 @@
 services:
   db:
     image: postgis/postgis:16-3.4
+    restart: unless-stopped
     environment:
       POSTGRES_USER: naangareko
       POSTGRES_PASSWORD: naangareko
@@ -17,16 +18,23 @@ services:
 
   api:
     build: ./backend
+    restart: unless-stopped
     env_file:
       - path: .env
         required: false
     environment:
       DATABASE_URL: postgresql+asyncpg://naangareko:naangareko@db:5432/naangareko
       CLIMA_DEMO: ${CLIMA_DEMO:-}
-    ports: ["8000:8000"]
+    ports: ["8000:8000"]  # Swagger en /docs
     depends_on:
       db:
         condition: service_healthy
+
+  web:
+    build: ./frontend
+    restart: unless-stopped
+    ports: ["80:80"]
+    depends_on: [api]
 
 volumes:
   pgdata:

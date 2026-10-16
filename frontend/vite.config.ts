@@ -7,7 +7,9 @@ export default defineConfig({
     react(),
     VitePWA({
       registerType: 'autoUpdate',
+      includeAssets: ['favicon.ico', 'apple-touch-icon-180x180.png', 'icon.svg'],
       manifest: {
+        id: '/',
         name: 'Ñangarekó IA',
         short_name: 'Ñangarekó',
         description: 'Tu compañero diario para anticiparte al clima, ordenar tu ciudad y moverte seguro.',
@@ -15,8 +17,21 @@ export default defineConfig({
         theme_color: '#0f766e',
         background_color: '#0f766e',
         display: 'standalone',
+        orientation: 'portrait',
         start_url: '/',
-        icons: [{ src: '/icon.svg', sizes: 'any', type: 'image/svg+xml', purpose: 'any maskable' }],
+        scope: '/',
+        categories: ['weather', 'navigation', 'utilities'],
+        icons: [
+          { src: '/pwa-64x64.png', sizes: '64x64', type: 'image/png' },
+          { src: '/pwa-192x192.png', sizes: '192x192', type: 'image/png' },
+          { src: '/pwa-512x512.png', sizes: '512x512', type: 'image/png', purpose: 'any' },
+          { src: '/maskable-icon-512x512.png', sizes: '512x512', type: 'image/png', purpose: 'maskable' },
+        ],
+        // Accesos directos al mantener presionado el ícono (Android / escritorio).
+        shortcuts: [
+          { name: 'Reportar raudal o calle', short_name: 'Tránsito', url: '/tape-ysyry', icons: [{ src: '/pwa-192x192.png', sizes: '192x192' }] },
+          { name: 'Reportar basura', short_name: 'Reportar', url: '/yty', icons: [{ src: '/pwa-192x192.png', sizes: '192x192' }] },
+        ],
       },
       workbox: {
         navigateFallbackDenylist: [/^\/api\//],

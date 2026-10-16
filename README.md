@@ -1,5 +1,7 @@
 # Ñangarekó IA
 
+[![CI](https://github.com/SilredPY/DesafioUPE-2026/actions/workflows/ci.yml/badge.svg)](https://github.com/SilredPY/DesafioUPE-2026/actions/workflows/ci.yml)
+
 > *Ñangarekó* (guaraní): cuidar, proteger, velar por algo.
 > **Tu compañero diario para anticiparte al clima, ordenar tu ciudad y moverte seguro.**
 
@@ -36,16 +38,32 @@ Resiliencia:
 
 ## Cómo correrlo
 
+Todo el sistema con un solo comando:
+
 ```bash
 cp .env.example .env            # cargar ANTHROPIC_API_KEY
-docker compose up -d --build    # PostGIS + API en http://localhost:8000/docs
-
-cd frontend
-npm install
-npm run dev                     # http://localhost:5173 (proxy /api → :8000)
+docker compose up -d --build
 ```
 
-Para correr la API sin Docker: `cd backend && python -m venv .venv && .venv/Scripts/pip install -e ".[dev]" && .venv/Scripts/uvicorn app.main:app --reload`, con la base levantada (`docker compose up -d db`).
+| Servicio | URL |
+|---|---|
+| App (nginx: PWA + proxy `/api`) | http://localhost |
+| API + Swagger | http://localhost:8000/docs |
+| PostGIS | localhost:5432 |
+
+Para desarrollar con recarga en caliente: `docker compose up -d db api` y después `cd frontend && npm install && npm run dev`. Queda en http://localhost:5173.
+
+## 📱 Instalar como app
+
+Ñangarekó IA es una **PWA**: se instala desde el navegador, sin tienda de apps, y ocupa menos de 1 MB.
+
+- **Android (Chrome):** tocar el botón **⬇ Instalar** del encabezado, o ⋮ → *Instalar aplicación*. Al mantener presionado el ícono aparecen accesos directos a *Tránsito* y *Reportar*.
+- **iPhone (Safari):** Compartir → *Agregar a pantalla de inicio*.
+- **PC (Chrome/Edge):** ícono de instalar en la barra de direcciones.
+
+> ⚠️ En un celular, la cámara, el GPS y el modo offline **requieren HTTPS**: los navegadores solo los habilitan en `localhost` o en sitios seguros. Para mostrarla en un celular, publicala con HTTPS. Para una prueba rápida sirve un túnel: `cloudflared tunnel --url http://localhost`.
+
+Para regenerar los íconos después de cambiar `frontend/public/icon.svg`, correr `cd frontend && npm run iconos`.
 
 ## 🎤 Modo demo (para el jurado)
 
@@ -54,7 +72,7 @@ Un día soleado no muestra nada. Para presentar:
 ```bash
 CLIMA_DEMO=tormenta docker compose up -d --build     # o CLIMA_DEMO=sequia con TEMPORADA_ENSO=LA_NINA
 docker compose exec db psql -U naangareko -f /demo/demo.sql   # justo antes de presentar
-cd frontend && npm run dev
+# abrir http://localhost
 ```
 
 - **Clima:** muestra tormenta crítica en rojo, con consejos y el mensaje en jopara si hay `ANTHROPIC_API_KEY`.
@@ -63,6 +81,21 @@ cd frontend && npm run dev
 - **Reportar:** subí una foto de un desagüe tapado. Como el modo demo simula lluvia, la IA la marca como **CRÍTICO**.
 
 Guion sugerido (2 min): problema (inundaciones y basurales en Alto Paraná) → alerta en lenguaje del barrio → foto de sumidero + lluvia = crítico → tres vecinos confirman un raudal → Zona Roja → funciona sin señal (activá "Offline" en DevTools y reportá).
+
+## Calidad y producción
+
+- **CI (GitHub Actions):** en cada push corre los tests del backend, el build tipado del frontend y el build de las imágenes Docker.
+- **nginx:**
+  - Assets con hash cacheados un año (`immutable`).
+  - Service worker y HTML sin caché, para que las actualizaciones lleguen al toque.
+  - Compresión gzip.
+  - Cabeceras de seguridad (`X-Frame-Options`, `nosniff`, `Referrer-Policy`, `Permissions-Policy`: solo GPS y cámara).
+- **API:**
+  - Corre con un usuario sin privilegios y tiene healthcheck.
+  - Comprime las respuestas con gzip.
+  - Valida el tipo de imagen por su firma.
+  - Limita los reportes por dispositivo.
+  - No expone el `device_id`.
 
 ## Tests
 
