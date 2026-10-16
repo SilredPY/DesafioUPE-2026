@@ -36,5 +36,13 @@ services:
     ports: ["80:80"]
     depends_on: [api]
 
+  # Link público HTTPS gratis (sin cuenta ni dominio): docker compose --profile publico up -d
+  # La URL aparece con: docker compose logs tunel | grep trycloudflare
+  tunel:
+    image: cloudflare/cloudflared:latest
+    profiles: [publico]
+    command: tunnel --no-autoupdate --url http://web:80
+    depends_on: [web]
+
 volumes:
   pgdata:

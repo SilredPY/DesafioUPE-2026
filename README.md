@@ -61,7 +61,19 @@ Para desarrollar con recarga en caliente: `docker compose up -d db api` y despu�
 - **iPhone (Safari):** Compartir → *Agregar a pantalla de inicio*.
 - **PC (Chrome/Edge):** ícono de instalar en la barra de direcciones.
 
-> ⚠️ En un celular, la cámara, el GPS y el modo offline **requieren HTTPS**: los navegadores solo los habilitan en `localhost` o en sitios seguros. Para mostrarla en un celular, publicala con HTTPS. Para una prueba rápida sirve un túnel: `cloudflared tunnel --url http://localhost`.
+> ⚠️ En un celular, la cámara, el GPS y el modo offline **requieren HTTPS**: los navegadores solo los habilitan en `localhost` o en sitios seguros.
+
+### Link público HTTPS gratis (sin dominio ni cuenta)
+
+```bash
+docker compose --profile publico up -d --build
+docker compose logs tunel | grep trycloudflare     # → https://xxxx.trycloudflare.com
+```
+
+Abrí ese link en cualquier celular, o pasalo como código QR al jurado. Ten en cuenta:
+- La app corre en **tu** compu: si la apagás o la desconectás, el link deja de funcionar.
+- El link **cambia cada vez** que se reinicia el túnel.
+- Para cerrarlo: `docker compose stop tunel`.
 
 Para regenerar los íconos después de cambiar `frontend/public/icon.svg`, correr `cd frontend && npm run iconos`.
 
