@@ -52,10 +52,11 @@ for ip in $(hostname -I 2>/dev/null || ipconfig getifaddr en0 2>/dev/null || tru
 done
 
 if [ "$PUBLICO" = 1 ]; then
+  # Se pregunta al propio túnel (no a los logs, que guardan URLs viejas de arranques anteriores).
   URL=""
   for _ in $(seq 1 30); do
-    URL=$(docker compose logs tunel 2>&1 | grep -o 'https://[a-z0-9-]*\.trycloudflare\.com' | tail -1 || true)
+    URL=$(curl -sf http://localhost:2000/quicktunnel | grep -o '[a-z0-9-]*\.trycloudflare\.com' || true)
     [ -n "$URL" ] && break; sleep 2
   done
-  echo "  Link público (celulares): ${URL:-todavía arrancando, ver: docker compose logs tunel}"
+  echo "  Link público (celulares): ${URL:+https://}${URL:-todavía arrancando, ver: docker compose logs tunel}"
 fi

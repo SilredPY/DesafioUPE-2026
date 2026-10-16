@@ -64,12 +64,12 @@ $ips = Get-NetIPAddress -AddressFamily IPv4 -ErrorAction SilentlyContinue |
 foreach ($ip in $ips) { Write-Host "  Otros equipos de tu red:  http://$($ip.IPAddress)  (sin cámara/GPS: requieren HTTPS)" }
 
 if ($Publico) {
+    # Se pregunta al propio túnel (no a los logs, que guardan URLs viejas de arranques anteriores).
     $url = $null
     for ($i = 0; $i -lt 30 -and -not $url; $i++) {
-        $url = (docker compose logs tunel 2>&1 | Select-String -Pattern 'https://[a-z0-9-]+\.trycloudflare\.com' |
-            Select-Object -Last 1).Matches.Value
+        try { $url = (Invoke-RestMethod http://localhost:2000/quicktunnel -TimeoutSec 2 -ErrorAction Stop).hostname } catch {}
         if (-not $url) { Start-Sleep 2 }
     }
-    if ($url) { Write-Host "  Link público (celulares): $url" -ForegroundColor Cyan }
+    if ($url) { Write-Host "  Link público (celulares): https://$url" -ForegroundColor Cyan }
     else { Write-Host '  El túnel tarda en arrancar: docker compose logs tunel' -ForegroundColor Yellow }
 }
