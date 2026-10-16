@@ -32,7 +32,7 @@ unset CLIMA_DEMO  # que mande .env, no una variable vieja de la sesión
 
 PERFIL=()
 [ "$PUBLICO" = 1 ] && PERFIL=(--profile publico)
-docker compose "${PERFIL[@]}" up -d --build
+docker compose "${PERFIL[@]}" up -d --build || { echo "Falló docker compose up: revisá que los puertos 80, 8000, 5432 y 2000 estén libres (lista completa en requisitos-ejecucion-local/README.md)"; exit 1; }
 
 echo "Esperando a que la API responda..."
 for _ in $(seq 1 60); do curl -sf http://localhost/api/salud >/dev/null && break; sleep 2; done

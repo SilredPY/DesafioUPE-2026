@@ -9,11 +9,11 @@ from app.main import app
 from app.modules.campus import api as campus_api
 from app.modules.campus.domain import Institucion
 from app.modules.clima import api as clima_api
-from app.modules.clima import use_cases as clima_uc
 from app.modules.clima.domain import Boletin
 from app.modules.residuos import api as residuos_api
 from app.modules.residuos.domain import Categoria, Clasificacion
 from app.modules.transito import api as transito_api
+from app.shared import cache
 from app.shared.geo import Punto, distancia_m
 
 TORMENTA = Boletin(precipitacion_mm=40, prob_lluvia=95, codigo_tiempo=95, rafagas_kmh=70, temp_max=27, indice_uv=3)
@@ -93,7 +93,7 @@ TOKEN = "token-de-prueba-123"
 
 @pytest.fixture
 def client(monkeypatch):
-    clima_uc._cache.clear()
+    cache.limpiar()
     monkeypatch.setattr(campus_api.settings, "admin_token", TOKEN)
     repo_residuos, repo_transito, repo_campus = RepoMem(), RepoMem(), CampusMem()
     app.dependency_overrides = {

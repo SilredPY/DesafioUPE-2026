@@ -24,6 +24,8 @@ App instalable (PWA) para el área metropolitana de Alto Paraná: Ciudad del Est
 
 **Único requisito:** [Docker Desktop](https://www.docker.com/products/docker-desktop/) abierto. No hace falta instalar Python ni Node.
 
+✅ **¿Tu compu tiene todo?** Doble clic en `requisitos-ejecucion-localerificar.cmd`: revisa cada requisito y ofrece instalar lo que falte. La lista completa (y lo que se fue sumando) está en [requisitos-ejecucion-local/README.md](requisitos-ejecucion-local/README.md).
+
 ```bash
 git clone https://github.com/SilredPY/DesafioUPE-2026.git
 cd DesafioUPE-2026
@@ -145,10 +147,11 @@ backend/
   app/modules/        clima · residuos · transito · campus (Clean Architecture por módulo)
   nativo/             motor C++17 + pybind11 (agrupación masiva, 47–53× más rápido)
   db/esquema/         migraciones SQL idempotentes   db/demo.sql: datos de ejemplo
-  tests/              52 tests
+  tests/              54 tests
 frontend/src/
   shared/             cliente HTTP + cola offline, tema, componentes UI
   features/           clima · transito · residuos · campus · ajustes
-scripts/              iniciar.ps1 · iniciar.cmd · iniciar.sh
+scripts/              iniciar.ps1 · iniciar.cmd · iniciar.sh · demo-publico.cmd · detener.cmd
+requisitos-ejecucion-local/  qué necesita tu compu + verificar.cmd (revisa e instala)
 docs/                 COMO_FUNCIONA.md (informe técnico)
 ```

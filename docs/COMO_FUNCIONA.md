@@ -126,7 +126,7 @@ sequenceDiagram
     API->>API: validar firma del archivo, tamaño ≤ 5 MB, zona, límite/hora
     par en paralelo
         API->>IA: clasificar → categoría + confianza + descripción
-        API->>OM: ¿lluvia en camino en ese punto?
+        API->>OM: ¿lluvia en camino en ese punto? (caché 10 min por zona de ~1 km)
     end
     API->>API: scoring: sumidero tapado + lluvia = CRÍTICO
     API->>DB: guardar
@@ -270,7 +270,10 @@ La imagen Docker compila el motor en una etapa aparte (con `g++`) y la imagen fi
 - **Descarga:** unos 113 KB iniciales (gzip). Cada sección se carga al abrirla.
 - **Caché del navegador:** los assets con hash quedan un año (`immutable`). El HTML y el service worker nunca se cachean, para que las actualizaciones lleguen enseguida.
 - **Compresión:** gzip en nginx y en la API.
-- **Caché de clima e IA:** 10 minutos por ciudad o campus. Con mil estudiantes mirando la misma institución, se hace una sola consulta a Open-Meteo y a Claude.
+- **Caché de clima e IA:** 10 minutos por ciudad o campus. Con mil estudiantes mirando la misma institución, se hace una sola consulta a Open-Meteo y a Claude. Si llegan muchos pedidos **a la vez** con la caché vacía (por ejemplo, todos escanean el QR juntos), uno solo la calcula y los demás esperan ese resultado (`backend/app/shared/cache.py`).
+- **Pronóstico por zona:** el pronóstico se guarda 10 minutos por zona de ~1 km. Los reportes de basura del mismo barrio no vuelven a consultar Open-Meteo.
+- **Zonas Rojas:** el agrupamiento se reutiliza 30 segundos y se recalcula apenas llega un reporte nuevo.
+- **Conexión reutilizada:** un solo cliente HTTP hacia Open-Meteo para toda la API, sin abrir una conexión TLS por consulta.
 - **Paralelismo:** las traducciones con IA corren en paralelo. En Campus, el clima (red) corre en paralelo con las consultas a la base.
 - **Motor C++:** para la agrupación masiva (sección 6).
 

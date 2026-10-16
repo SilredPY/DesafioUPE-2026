@@ -1,3 +1,5 @@
+from functools import lru_cache
+
 import httpx
 
 from app.modules.clima.domain import Boletin
@@ -6,6 +8,12 @@ from app.shared.geo import Punto
 # shortcut: Open-Meteo (gratis, sin clave) porque la DMH de Paraguay no expone una API pública estable;
 # sumar un adaptador DMH con este mismo puerto cuando exista.
 URL = "https://api.open-meteo.com/v1/forecast"
+
+
+@lru_cache
+def _cliente() -> httpx.AsyncClient:
+    # Un solo cliente para toda la API: reutiliza la conexión TLS en vez de abrir una por consulta.
+    return httpx.AsyncClient(timeout=8.0)
 
 
 class OpenMeteo:
@@ -19,10 +27,9 @@ class OpenMeteo:
             "forecast_days": 1,
             "timezone": "America/Asuncion",
         }
-        async with httpx.AsyncClient(timeout=8.0) as client:
-            r = await client.get(URL, params=params)
-            r.raise_for_status()
-            data = r.json()
+        r = await _cliente().get(URL, params=params)
+        r.raise_for_status()
+        data = r.json()
 
         h, d = data["hourly"], data["daily"]
         return Boletin(

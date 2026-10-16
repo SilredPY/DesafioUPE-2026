@@ -14,7 +14,7 @@ $ErrorActionPreference = 'Continue'
 Set-Location (Split-Path $PSScriptRoot -Parent)
 
 if (-not (Get-Command docker -ErrorAction SilentlyContinue)) {
-    throw 'No se encontró Docker. Instalá Docker Desktop: https://www.docker.com/products/docker-desktop/'
+    throw 'No se encontró Docker. Corré requisitos-ejecucion-localerificar.cmd: revisa lo que falta y lo instala.'
 }
 docker info *> $null
 if ($LASTEXITCODE -ne 0) { throw 'Docker no está corriendo: abrí Docker Desktop, esperá que inicie y reintentá.' }
@@ -39,7 +39,7 @@ Remove-Item Env:CLIMA_DEMO -ErrorAction SilentlyContinue  # que mande .env, no u
 
 $perfil = if ($Publico) { @('--profile', 'publico') } else { @() }
 docker compose @perfil up -d --build
-if ($LASTEXITCODE -ne 0) { throw 'Falló docker compose up. Revisá el mensaje de arriba.' }
+if ($LASTEXITCODE -ne 0) { throw 'Falló docker compose up. Revisá el mensaje de arriba o corré requisitos-ejecucion-localerificar.cmd (puertos ocupados, disco, internet).' }
 
 Write-Host 'Esperando a que la API responda...'
 $lista = $false
