@@ -7,7 +7,8 @@
     "dev": "vite",
     "build": "tsc --noEmit && vite build",
     "preview": "vite preview",
-    "iconos": "pwa-assets-generator"
+    "iconos": "pwa-assets-generator",
+    "test": "node --test src/features/campus/coordenadas.test.ts"
   },
   "dependencies": {
     "@tanstack/react-query": "^5.104.3",

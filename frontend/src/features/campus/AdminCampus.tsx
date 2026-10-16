@@ -1,8 +1,12 @@
 import { useQueryClient } from '@tanstack/react-query';
-import { useState, type FormEvent } from 'react';
+import { lazy, Suspense, useState, type FormEvent } from 'react';
 import { postJson } from '../../shared/api/client';
-import { ubicacionActual } from '../../shared/ubicacion';
+import { Skeleton } from '../../shared/ui/Skeleton';
+import type { Coord } from './coordenadas';
 import type { Institucion, TipoAviso } from './useCampus';
+
+// El mapa (Leaflet) solo se descarga si alguien abre la administración.
+const SelectorUbicacion = lazy(() => import('./SelectorUbicacion').then((m) => ({ default: m.SelectorUbicacion })));
 
 const TIPOS_AVISO: { valor: TipoAviso; texto: string }[] = [
   { valor: 'GENERAL', texto: '📌 General' },
@@ -19,7 +23,9 @@ export function AdminCampus({ slug }: { slug: string }) {
   const qc = useQueryClient();
   const [token, setToken] = useState('');
   const [estado, setEstado] = useState<Estado>(null);
-  const [coords, setCoords] = useState({ lat: '', lon: '' });
+  const [abierto, setAbierto] = useState(false);
+  const [ubicacion, setUbicacion] = useState<Coord | null>(null);
+  const [radio, setRadio] = useState(1500);
 
   async function ejecutar(accion: () => Promise<string>) {
     setEstado(null);
@@ -48,22 +54,26 @@ export function AdminCampus({ slug }: { slug: string }) {
     ev.preventDefault();
     const f = new FormData(ev.currentTarget);
     const form = ev.currentTarget;
+    if (!ubicacion) {
+      setEstado({ clase: 'error', texto: 'Marcá la ubicación del campus en el mapa.' });
+      return;
+    }
     void ejecutar(async () => {
       const i = await postJson<Institucion>('/campus/instituciones', {
-        nombre: f.get('nombre'), ciudad: f.get('ciudad'), lat: Number(coords.lat), lon: Number(coords.lon),
-        radio_m: Number(f.get('radio')),
+        nombre: f.get('nombre'), ciudad: f.get('ciudad'), lat: ubicacion.lat, lon: ubicacion.lon, radio_m: radio,
       }, { 'X-Admin-Token': token });
       form.reset();
-      setCoords({ lat: '', lon: '' });
+      setUbicacion(null);
+      setRadio(1500);
       await qc.invalidateQueries({ queryKey: ['instituciones'] });
       return `✅ ${i.nombre} agregada. Ya aparece en la lista.`;
     });
   }
 
   return (
-    <details className="tarjeta" style={{ marginTop: 28 }}>
+    <details className="tarjeta" style={{ marginTop: 28 }} onToggle={(e) => setAbierto(e.currentTarget.open)}>
       <summary><strong>🔐 Administración de la institución</strong></summary>
-      <div className="pila" style={{ marginTop: 12 }}>
+      {abierto && <div className="pila" style={{ marginTop: 12 }}>
         <label className="campo">
           Token de administración
           <input type="password" autoComplete="off" value={token} onChange={(e) => setToken(e.target.value)}
@@ -88,27 +98,18 @@ export function AdminCampus({ slug }: { slug: string }) {
           <label className="campo">Nombre<input name="nombre" required minLength={3} maxLength={120}
             placeholder="Ej.: Facultad Politécnica — UNE" /></label>
           <label className="campo">Ciudad<input name="ciudad" required minLength={2} maxLength={60} /></label>
-          <div className="fila">
-            <label className="campo" style={{ flex: 1 }}>Latitud
-              <input required inputMode="decimal" value={coords.lat} onChange={(e) => setCoords({ ...coords, lat: e.target.value })} />
-            </label>
-            <label className="campo" style={{ flex: 1 }}>Longitud
-              <input required inputMode="decimal" value={coords.lon} onChange={(e) => setCoords({ ...coords, lon: e.target.value })} />
-            </label>
-          </div>
-          <button type="button" className="boton secundario" onClick={() => void ejecutar(async () => {
-            const p = await ubicacionActual();
-            setCoords({ lat: p.lat.toFixed(6), lon: p.lon.toFixed(6) });
-            return '📍 Ubicación cargada: revisá que sea la del campus.';
-          })}>📍 Usar mi ubicación actual</button>
-          <label className="campo">Radio de influencia (metros)
-            <input name="radio" type="number" min={200} max={10000} defaultValue={1500} />
+          <span className="campo">Ubicación del campus</span>
+          <Suspense fallback={<Skeleton alto={320} />}>
+            <SelectorUbicacion valor={ubicacion} alCambiar={setUbicacion} radio={radio} />
+          </Suspense>
+          <label className="campo">Radio de influencia: {(radio / 1000).toLocaleString('es-PY')} km
+            <input type="range" min={200} max={5000} step={100} value={radio} onChange={(e) => setRadio(Number(e.target.value))} />
           </label>
-          <button className="boton" disabled={!token}>Agregar institución</button>
+          <button className="boton" disabled={!token || !ubicacion}>Agregar institución</button>
         </form>
 
         <div aria-live="polite">{estado && <div className={`aviso ${estado.clase}`}>{estado.texto}</div>}</div>
-      </div>
+      </div>}
     </details>
   );
 }

@@ -97,7 +97,13 @@ Las Zonas Rojas duran unas 2 horas: correr el script de nuevo justo antes de pre
 
 Hace falta `ADMIN_TOKEN` configurado.
 
-- **Desde la app:** 🎓 Campus → *Administración de la institución* → completar el token y los datos, o tocar *Usar mi ubicación actual* estando en el campus.
+- **Desde la app:** 🎓 Campus → *Administración de la institución* → completar el token, el nombre y la ciudad, y marcar la ubicación de una de estas formas:
+  - tocar el campus en el mapa y arrastrar el pin hasta la entrada;
+  - buscarlo por nombre o dirección (OpenStreetMap, limitado a Alto Paraná);
+  - **pegar el link de Google Maps** del lugar (si es un link corto `maps.app.goo.gl`, abrilo y copiá el link largo);
+  - tocar *Estoy en el campus* para usar el GPS.
+
+  El círculo del mapa muestra el radio de influencia, que se ajusta con el control deslizante. Se eligió OpenStreetMap porque Google Maps embebido exige una clave con facturación.
 - **Desde la API** (las coordenadas son de ejemplo):
   ```bash
   curl -X POST http://localhost:8000/api/campus/instituciones \
@@ -129,7 +135,7 @@ En macOS/Linux, reemplazá `.venv/Scripts/` por `.venv/bin/`.
 | `ANTHROPIC_MODEL` | `claude-opus-5-5` | `claude-haiku-5-5` abarata mucho la clasificación |
 | `ADMIN_TOKEN` | vacío | Habilita la administración de Campus |
 | `TEMPORADA_ENSO` | `NEUTRAL` | `EL_NINO` / `LA_NINA`: actualizar según el boletín ENSO |
-| `CLIMA_DEMO` | vacío | `tormenta` / `sequia`: escenario fijo para presentar |
+| `CLIMA_DEMO` | vacío | `tormenta` / `sequia`: escenario fijo para presentar. El script lo pone en `tormenta` con `-Demo` y lo vacía sin él |
 
 ## Estructura
 

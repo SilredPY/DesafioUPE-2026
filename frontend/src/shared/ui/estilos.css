@@ -235,6 +235,15 @@ label.campo { display: grid; gap: 6px; font-size: .85rem; font-weight: 600; colo
 
 /* ================= Mapas y estadísticas ================= */
 .mapa { height: 55vh; min-height: 300px; border-radius: 22px; border: 1px solid var(--borde); box-shadow: var(--sombra); z-index: 0; }
+.mapa.compacto { height: 320px; min-height: 0; cursor: crosshair; }
+.pin-mapa { font-size: 34px; line-height: 1; filter: drop-shadow(0 3px 3px rgb(0 0 0 / .4)); }
+.resultados { display: grid; border: 1px solid var(--borde); border-radius: 14px; overflow: hidden; animation: aparecer .25s var(--curva); }
+.resultados button {
+  text-align: left; padding: 10px 12px; border: 0; border-bottom: 1px solid var(--borde); background: var(--superficie);
+  color: var(--texto); font: inherit; font-size: .88rem; cursor: pointer; transition: background-color .15s;
+}
+.resultados button:last-child { border-bottom: 0; }
+.resultados button:hover { background: var(--superficie-2); }
 .leyenda { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 10px; align-items: center; color: var(--suave); font-size: .85rem; }
 .stats { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; margin-bottom: 12px; }
 .stat { background: var(--superficie); border: 1px solid var(--borde); border-radius: 16px; padding: 10px; text-align: center; box-shadow: var(--sombra); }

@@ -1,6 +1,12 @@
 -- Datos de DEMOSTRACIÓN para presentar el mapa. No usar en producción.
 -- docker compose exec db psql -U naangareko -f /demo/demo.sql
 -- Los reportes de tránsito usan now(): correrlo justo antes de la demo (las Zonas Rojas duran 3 h).
+-- Se puede correr las veces que haga falta: primero borra lo que cargó antes (solo filas de demo).
+
+BEGIN;
+DELETE FROM reportes_residuos WHERE device_id LIKE 'demo-%';
+DELETE FROM reportes_transito WHERE device_id LIKE 'demo-%';
+DELETE FROM avisos WHERE institucion = 'upe-presidente-franco' AND titulo LIKE 'Alerta de tormenta:%';
 
 INSERT INTO reportes_residuos (ubicacion, device_id, categoria, confianza, descripcion, severidad, creado)
 SELECT ST_SetSRID(ST_MakePoint(lon, lat), 4326)::geography, 'demo-' || n, cat, conf, descr, sev, now() - (n || ' hours')::interval
@@ -42,3 +48,5 @@ FROM (VALUES
   -- Bache en Pdte. Franco: solo 1 vecino (no llega a Zona Roja: así se ve el anti-spam)
   (-25.56000, -54.61200, 'BACHE', 'demo-c1', 10)
 ) AS t(lat, lon, tipo, dev, min);
+
+COMMIT;

@@ -29,7 +29,13 @@ if (-not (Test-Path .env)) {
     Copy-Item .env.example .env
     Write-Host 'Se creó .env: completá ANTHROPIC_API_KEY para activar la IA (opcional).' -ForegroundColor Yellow
 }
-if ($Demo) { $env:CLIMA_DEMO = 'tormenta' }
+# El modo se guarda en .env (Compose lo lee siempre): así un "docker compose up" posterior no lo apaga sin querer.
+$modo = if ($Demo) { 'tormenta' } else { '' }
+$lineas = [System.Collections.Generic.List[string]](Get-Content .env)
+$i = $lineas.FindIndex({ param($l) $l -match '^CLIMA_DEMO=' })
+if ($i -ge 0) { $lineas[$i] = "CLIMA_DEMO=$modo" } else { $lineas.Add("CLIMA_DEMO=$modo") }
+[IO.File]::WriteAllLines((Join-Path (Get-Location) '.env'), $lineas)  # UTF-8 sin BOM
+Remove-Item Env:CLIMA_DEMO -ErrorAction SilentlyContinue  # que mande .env, no una variable vieja de la sesión
 
 $perfil = if ($Publico) { @('--profile', 'publico') } else { @() }
 docker compose @perfil up -d --build

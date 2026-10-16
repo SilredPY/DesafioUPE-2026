@@ -21,7 +21,14 @@ command -v docker >/dev/null || { echo "Instalá Docker: https://docs.docker.com
 docker info >/dev/null 2>&1 || { echo "Docker no está corriendo: inicialo y reintentá."; exit 1; }
 
 [ -f .env ] || { cp .env.example .env; echo "Se creó .env: completá ANTHROPIC_API_KEY para activar la IA (opcional)."; }
-[ "$DEMO" = 1 ] && export CLIMA_DEMO=tormenta
+# El modo se guarda en .env (Compose lo lee siempre): así un "docker compose up" posterior no lo apaga sin querer.
+MODO=""; [ "$DEMO" = 1 ] && MODO=tormenta
+if grep -q '^CLIMA_DEMO=' .env; then
+  sed -i.bak "s/^CLIMA_DEMO=.*/CLIMA_DEMO=$MODO/" .env && rm -f .env.bak
+else
+  echo "CLIMA_DEMO=$MODO" >> .env
+fi
+unset CLIMA_DEMO  # que mande .env, no una variable vieja de la sesión
 
 PERFIL=()
 [ "$PUBLICO" = 1 ] && PERFIL=(--profile publico)

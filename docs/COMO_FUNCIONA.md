@@ -74,7 +74,7 @@ frontend/src/
   features/          clima/  transito/  residuos/  campus/  ajustes/
 ```
 
-Solo la portada (Clima) va en la descarga inicial, de unos 102 KB comprimidos. El resto de las secciones, incluido Leaflet para los mapas, se descarga recién cuando se abre.
+Solo la portada (Clima) va en la descarga inicial, de unos 113 KB comprimidos. El resto de las secciones, incluido Leaflet para los mapas, se descarga recién cuando se abre.
 
 ---
 
@@ -267,7 +267,7 @@ La imagen Docker compila el motor en una etapa aparte (con `g++`) y la imagen fi
 
 ## 8. Rendimiento
 
-- **Descarga:** 102 KB iniciales (gzip). Cada sección se carga al abrirla.
+- **Descarga:** unos 113 KB iniciales (gzip). Cada sección se carga al abrirla.
 - **Caché del navegador:** los assets con hash quedan un año (`immutable`). El HTML y el service worker nunca se cachean, para que las actualizaciones lleguen enseguida.
 - **Compresión:** gzip en nginx y en la API.
 - **Caché de clima e IA:** 10 minutos por ciudad o campus. Con mil estudiantes mirando la misma institución, se hace una sola consulta a Open-Meteo y a Claude.
